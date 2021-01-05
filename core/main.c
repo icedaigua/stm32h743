@@ -1,5 +1,7 @@
 
 
+#include "FreeRTOS.h"
+
 #include "stm32h7xx_hal.h"
 
 int main(int argc, char* argv[])
