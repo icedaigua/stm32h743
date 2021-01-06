@@ -15,28 +15,26 @@ extern "C"
 {
 #endif
 
-  extern void
-  NMI_Handler (void);
-  extern void
-  HardFault_Handler (void);
+extern void NMI_Handler (void);
+extern void HardFault_Handler (void);
 
 #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
-  extern void
+extern void
   MemManage_Handler (void);
-  extern void
+extern void
   BusFault_Handler (void);
-  extern void
+extern void
   UsageFault_Handler (void);
-  extern void
+extern  void
   DebugMon_Handler (void);
 #endif
 
-  extern void
+   extern   void
   SVC_Handler (void);
-
-  extern void
+//
+   extern   void
   PendSV_Handler (void);
-  extern void
+   extern   void
   SysTick_Handler (void);
 
 #if defined(__cplusplus)

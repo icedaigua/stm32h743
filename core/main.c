@@ -1,22 +1,55 @@
 
 
 #include "FreeRTOS.h"
+//#include "task.h"
+
 
 #include "stm32h7xx_hal.h"
 
-int main(int argc, char* argv[])
-{
-  // At this stage the system clock should have already been configured
-  // at high speed.
-	HAL_Init();
-	 SystemClock_Config();
-	MX_GPIO_Init();
-  // Infinite loop
-  while (1)
-    {
-	  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_RESET); //PB1
 
-		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_SET);
+static uint32_t fac_us=0;
+
+
+static uint16_t fac_ms=0;
+
+void Error_Handler(void);
+void MX_GPIO_Init(void);
+void SystemClock_Config(uint32_t plln,uint32_t pllm,uint32_t pllp,uint32_t pllq);
+void led1_task(void* arg);
+
+int main(void)
+{
+	HAL_Init();
+	SystemClock_Config(160,5,2,4);
+	delay_init();
+	MX_GPIO_Init();
+
+	uint32_t tic = 0;
+
+
+//	  xTaskCreate(led1_task, "led1_task", 64, NULL, 3, NULL);
+//
+//	  vTaskStartScheduler();
+
+	  while (1)
+	  {
+
+			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+			  delay_ms(1000);
+			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+
+	  }
+}
+
+
+
+void led1_task(void* arg)
+{
+    while(1)
+    {
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+//	  vTaskDelay(1000);
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
     }
 }
 
@@ -41,54 +74,60 @@ void MX_GPIO_Init(void)
 
 }
 
-void SystemClock_Config(void)
+void SystemClock_Config(uint32_t plln,uint32_t pllm,uint32_t pllp,uint32_t pllq)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+	HAL_StatusTypeDef ret=HAL_OK;
+	RCC_ClkInitTypeDef RCC_ClkInitStruct;
+	RCC_OscInitTypeDef RCC_OscInitStruct;
 
-  /** Supply configuration update enable
-  */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+	MODIFY_REG(PWR->CR3,PWR_CR3_SCUEN, 0);
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
+	while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {}
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1;
-  PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	RCC_OscInitStruct.OscillatorType=RCC_OSCILLATORTYPE_HSE;
+	RCC_OscInitStruct.HSEState=RCC_HSE_ON;
+	RCC_OscInitStruct.HSIState=RCC_HSI_OFF;
+	RCC_OscInitStruct.CSIState=RCC_CSI_OFF;
+	RCC_OscInitStruct.PLL.PLLState=RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource=RCC_PLLSOURCE_HSE;
+
+	RCC_OscInitStruct.PLL.PLLN=plln;
+	RCC_OscInitStruct.PLL.PLLM=pllm;
+	RCC_OscInitStruct.PLL.PLLP=pllp;
+	RCC_OscInitStruct.PLL.PLLQ=pllq;
+
+	RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+	RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+	ret=HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	if(ret!=HAL_OK)
+	{
+		Error_Handler();
+	}
+
+	RCC_ClkInitStruct.ClockType=(RCC_CLOCKTYPE_SYSCLK|\
+                                RCC_CLOCKTYPE_HCLK |\
+                                RCC_CLOCKTYPE_D1PCLK1 |\
+                                RCC_CLOCKTYPE_PCLK1 |\
+                                RCC_CLOCKTYPE_PCLK2 |\
+                                RCC_CLOCKTYPE_D3PCLK1);
+
+	RCC_ClkInitStruct.SYSCLKSource=RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.SYSCLKDivider=RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.AHBCLKDivider=RCC_HCLK_DIV2;
+	RCC_ClkInitStruct.APB1CLKDivider=RCC_APB1_DIV2;
+	RCC_ClkInitStruct.APB2CLKDivider=RCC_APB2_DIV2;
+	RCC_ClkInitStruct.APB3CLKDivider=RCC_APB3_DIV2;
+	RCC_ClkInitStruct.APB4CLKDivider=RCC_APB4_DIV4;
+	ret=HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+	if(ret!=HAL_OK)
+	{
+		Error_Handler();
+	}
+
+	__HAL_RCC_CSI_ENABLE() ;
+	__HAL_RCC_SYSCFG_CLK_ENABLE() ;
+	HAL_EnableCompensationCell();
 }
 
 
@@ -101,4 +140,49 @@ void Error_Handler(void)
   {
   }
   /* USER CODE END Error_Handler_Debug */
+}
+
+
+
+void delay_init(uint16_t SYSCLK)
+{
+	uint32_t reload;
+
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	fac_us=SYSCLK;
+	reload=SYSCLK;
+	reload*=1000000/configTICK_RATE_HZ;
+
+	fac_ms=1000/configTICK_RATE_HZ;
+	SysTick->CTRL|=SysTick_CTRL_TICKINT_Msk;
+	SysTick->LOAD=reload;
+	SysTick->CTRL|=SysTick_CTRL_ENABLE_Msk;
+}
+
+
+
+void delay_us(uint32_t nus)
+{
+	uint32_t ticks;
+	uint32_t told,tnow,tcnt=0;
+	uint32_t reload=SysTick->LOAD;
+	ticks=nus*fac_us;
+	told=SysTick->VAL;
+	while(1)
+	{
+		tnow=SysTick->VAL;
+		if(tnow!=told)
+		{
+			if(tnow<told)tcnt+=told-tnow;
+			else tcnt+=reload-tnow+told;
+			told=tnow;
+			if(tcnt>=ticks)break;
+		}
+	};
+}
+
+void delay_ms(uint16_t nms)
+{
+	uint32_t i;
+	for(i=0;i<nms;i++) delay_us(1000);
 }

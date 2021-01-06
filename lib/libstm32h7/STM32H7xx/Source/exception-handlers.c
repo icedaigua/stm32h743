@@ -1,8 +1,11 @@
 
 #include "exception-handlers.h"
 
+#include "stm32h7xx_hal.h"
 
-void __attribute__ ((section(".after_vectors"),weak))
+
+//void __attribute__ ((section(".after_vectors"),weak))
+void __attribute__ ((weak))
 NMI_Handler (void)
 {
 
@@ -11,16 +14,8 @@ NMI_Handler (void)
     }
 }
 
-
-
-// Hard Fault handler wrapper in assembly.
-// It extracts the location of stack frame and passes it to handler
-// in C as a pointer. We also pass the LR value as second
-// parameter.
-// (Based on Joseph Yiu's, The Definitive Guide to ARM Cortex-M3 and
-// Cortex-M4 Processors, Third Edition, Chap. 12.8, page 402).
-
-void __attribute__ ((section(".after_vectors"),weak,naked))
+//void __attribute__ ((section(".after_vectors"),weak,naked))
+void __attribute__ ((weak,naked))
 HardFault_Handler (void)
 {
   asm volatile(
@@ -38,7 +33,22 @@ HardFault_Handler (void)
 }
 
 
-void __attribute__ ((section(".after_vectors"),weak))
+
+#if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
+
+//void __attribute__ ((section(".after_vectors"),weak))
+void __attribute__ ((weak))
+DebugMon_Handler (void)
+{
+
+//  while (1)
+//    {
+//    }
+}
+
+
+//void __attribute__ ((section(".after_vectors"),weak))
+void __attribute__ ((weak))
 MemManage_Handler (void)
 {
 
@@ -47,7 +57,8 @@ MemManage_Handler (void)
     }
 }
 
-void __attribute__ ((section(".after_vectors"),weak,naked))
+//void __attribute__ ((section(".after_vectors"),weak,naked))
+void __attribute__ ((weak,naked))
 BusFault_Handler (void)
 {
   asm volatile(
@@ -65,7 +76,8 @@ BusFault_Handler (void)
 }
 
 
-void __attribute__ ((section(".after_vectors"),weak,naked))
+//void __attribute__ ((section(".after_vectors"),weak,naked))
+void __attribute__ ((weak,naked))
 UsageFault_Handler (void)
 {
   asm volatile(
@@ -82,42 +94,40 @@ UsageFault_Handler (void)
   );
 }
 
-
-void __attribute__ ((section(".after_vectors"),weak))
-SVC_Handler (void)
-{
-  while (1)
-    {
-    }
-}
-
-#if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
-
-void __attribute__ ((section(".after_vectors"),weak))
-DebugMon_Handler (void)
-{
-
-  while (1)
-    {
-    }
-}
-
 #endif
 
-void __attribute__ ((section(".after_vectors"),weak))
-PendSV_Handler (void)
+
+
+
+
+
+//void __attribute__ ((section(".after_vectors"),weak))
+void __attribute__ ((weak))
+SVC_Handler (void)
 {
-  while (1)
-    {
-    }
+//  while (1)
+//    {
+//    }
 }
 
-void __attribute__ ((section(".after_vectors"),weak))
+
+//void __attribute__ ((section(".after_vectors"),weak))
+void __attribute__ ((weak))
+PendSV_Handler (void)
+{
+//  while (1)
+//    {
+//    }
+}
+
+//void __attribute__ ((section(".after_vectors"),weak))
+void __attribute__ ((weak))
 SysTick_Handler (void)
 {
   // DO NOT loop, just return.
   // Useful in case someone (like STM HAL) inadvertently enables SysTick.
-  ;
+
+	HAL_IncTick();
 }
 
 // ----------------------------------------------------------------------------

@@ -56,46 +56,7 @@
   */
 void HAL_MspInit(void)
 {
-
+//	__HAL_RCC_SYSCFG_CLK_ENABLE();
+//	 HAL_NVIC_SetPriority(PendSV_IRQn, 15, 0);
 }
 
-/**
-  * @brief  DeInitializes the Global MSP.
-  * @retval None
-  */
-void HAL_MspDeInit(void)
-{
-
-}
-
-/**
-  * @brief  Initializes the PPP MSP.
-  * @retval None
-  */
-void HAL_PPP_MspInit(void)
-{
-
-}
-
-/**
-  * @brief  DeInitializes the PPP MSP.
-  * @retval None
-  */
-void HAL_PPP_MspDeInit(void)
-{
-
-}
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
