@@ -1,7 +1,7 @@
 
 
 #include "FreeRTOS.h"
-//#include "task.h"
+#include "task.h"
 
 
 #include "stm32h7xx_hal.h"
@@ -17,26 +17,29 @@ void MX_GPIO_Init(void);
 void SystemClock_Config(uint32_t plln,uint32_t pllm,uint32_t pllp,uint32_t pllq);
 void led1_task(void* arg);
 
+
+void delay_init(uint16_t SYSCLK);
+
+
 int main(void)
 {
 	HAL_Init();
 	SystemClock_Config(160,5,2,4);
-	delay_init();
+	delay_init(400);
 	MX_GPIO_Init();
 
-	uint32_t tic = 0;
 
+	  xTaskCreate(led1_task, "led1_task", 64, NULL, 3, NULL);
 
-//	  xTaskCreate(led1_task, "led1_task", 64, NULL, 3, NULL);
-//
-//	  vTaskStartScheduler();
+	  vTaskStartScheduler();
 
 	  while (1)
 	  {
 
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-			  delay_ms(1000);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+		  delay_ms(1000);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+		  delay_ms(1000);
 
 	  }
 }
@@ -48,8 +51,9 @@ void led1_task(void* arg)
     while(1)
     {
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-//	  vTaskDelay(1000);
+	  vTaskDelay(1000);
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+	  vTaskDelay(1000);
     }
 }
 
